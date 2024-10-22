@@ -32,13 +32,13 @@ menu :-
     write('b. Consulta de destino'), nl,
     write('c. Actividades por tipo'), nl,
     write('d. Consulta por precio'), nl,
-    write('e. Generar itinerario por monto'), nl,
-    write('f. Generar itinerario por días'), nl,
+    write('e. Generar itinerario por monto'), nl, 
+    write('f. Generar itinerario por días'), nl, 
     write('g. Recomendar por frase'), nl,
     write('h. Estadísticas'), nl,
-    write('j. Volver'), nl,
+    write('j. Volver'), nl, 
     write('Ingrese la opcion que desea: '),
-    read(Opcion), nl,
+    read(Opcion), nl, nl,
     manejarOpMenu(Opcion).
 
 % Maneja qué se hace en cada opción con corte para evitar falsos.
@@ -50,22 +50,22 @@ manejarOpMenu(e) :- itinerarioXmonto, menu.
 manejarOpMenu(f) :- itinerarioXdias, menu.
 manejarOpMenu(g) :- recomendarXfrase, menu.
 manejarOpMenu(h) :- estadisticas, menu.
-manejarOpMenu(j) :- !, menuPrincipal.
-manejarOpMenu(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, menu.
+manejarOpMenu(j) :- !, true.
+manejarOpMenu(_) :- write('Opción inválida, vuelva a intentarlo.'), nl,nl, menu.
 
 
 % Menú Principal %
 menuPrincipal :- 
-    write('m. Menú'), nl,
+    write('m. Menú'), nl, 
     write('s. Salir'), nl,
     write('Ingrese la opcion que desea: '),
-    read(Opcion), nl,
+    read(Opcion), nl, nl,
     manejarOpciones(Opcion).
 
 % Maneja qué se hace en cada opción con corte para evitar falsos.
 manejarOpciones(m) :- menu, menuPrincipal.
-manejarOpciones(s) :- write('Saliendo del programa...'), nl. 
-manejarOpciones(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, menuPrincipal.
+manejarOpciones(s) :- write('Saliendo del programa...'), nl, true. 
+manejarOpciones(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, nl, menuPrincipal.
 
 % iniciar el programa %
 iniciar :- menuPrincipal.
