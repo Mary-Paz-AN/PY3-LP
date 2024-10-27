@@ -362,16 +362,20 @@ consultarDestino :-
     ;   write('No existen actividades asociadas al destino dado.'), nl, nl
     ).
 
-% Entrada: 
-% Salida: 
-% Restricciones: 
-% Objetivo: Actividades por tipo 
+% Entrada: Ninguna
+% Salida: Ningna
+% Restricciones: Ninguna
+% Objetivo: Preguntar por el tipo de actividad para ver actividades relacionadas al tipo
 actividadXtipo :-
     write("Ingrese el tipo de actividad: "),
     read(Tipo),
     actividades_por_tipo(Tipo, Resultados),
     mostrar_resultados(Resultados).
 
+% Entrada: Lista de las actividades por el tipo
+% Salida: Ninguna
+% Restricciones: Ninguna
+% Objetivo: Mostrar los resultados de las actividades por el tipo dado
 mostrar_resultados([]) :-
     write("No se encontraron actividades para este tipo."), nl.
 mostrar_resultados([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
@@ -390,10 +394,10 @@ mostrar_resultados([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
 itinerarioXmonto :- write("Genenarar itinerario por monto"), nl.
 
 
-% Entrada: 
-% Salida: 
-% Restricciones: 
-% Objetivo: Consulta por precio
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Que la opción sea valida
+% Objetivo: Consultar actividades por precio. Pueden ser baratas o caras.
 consultaXprecio :-
     write("Ingrese el monto: "),
     read(Monto),
@@ -405,10 +409,10 @@ consultaXprecio :-
     ),
     mostrar_resultados(Resultados).
 
-% Entrada: 
-% Salida: 
-% Restricciones: 
-% Objetivo: Predicados para encontrar actividades por precio
+% Entrada: Monto
+% Salida: Resultados (lista de las actividades)
+% Restricciones: Ninguno
+% Objetivo: Predicado para encontrar actividades más baratas
 actividades_mas_baratas(Monto, Resultados) :-
     findall((Destino, Nombre, Costo, Duracion, Descripcion),
             (actividad(Nombre, Costo, Duracion, Descripcion, _),
@@ -416,6 +420,10 @@ actividades_mas_baratas(Monto, Resultados) :-
              asociar_actividad(Destino, Nombre)),
             Resultados).
 
+% Entrada: Monto
+% Salida: Resultados (lista de las actividades)
+% Restricciones: Ninguno
+% Objetivo: Predicado para encontrar actividades más caras
 actividades_mas_caras(Monto, Resultados) :-
     findall((Destino, Nombre, Costo, Duracion, Descripcion),
             (actividad(Nombre, Costo, Duracion, Descripcion, _),
@@ -437,37 +445,90 @@ itinerarioXdias :- write("Genarar itinerario por dias"), nl.
 % Objetivo: Recomendar por frase 
 recomendarXfrase :- write("Recomendar por frase"), nl.
 
+% Entrada: Ninguna
+% Salida: Actividades
+% Restricciones: Ninguna
+% Objetivo: Crea una lista de solo los nombres de las actividades
+crearListaActividades(Actividades) :-
+    findall(
+        Actividad,
+        actividad(Actividad, _, _, _, _),
+        Actividades).
+
+% Agrega una actividad a la lista si no está en ella
+agregar_si_no_existe(Actividad, Lista, NuevaLista) :-
+    (   member(Actividad, Lista) ->
+        NuevaLista = Lista  % No hace nada si ya está
+    ;   NuevaLista = [Actividad | Lista]  % Agrega si no está
+    ).
 
 % Entrada: Lista de actividades, Actividad (acumulada), CostoMax (acumulado)
 % Salida: Ninguna
-% Restricciones: Ninguna
+% Restricciones: Si hay actividades con un mismo costo maximo entonces se mostraran tambien
 % Objetivo: Calcula la actividad más cara comprando costos
-encontrarMasCara([], Actividad, _) :-
-    actividad(Actividad, Costo, Duracion, Descripcion, Tipo),
-    write('Nombre: '), write(Actividad),
-    nl, write('Costo: '), write(Costo),
-    nl, write('Duración: '), write(Duracion), write(' dias'),
-    nl, write('Descripción: '), write(Descripcion),
-    nl, write('Categorias: '), mostrarTipos(Tipo), nl,nl.
+encontrarMasCara([], ActividadesMasCaras, _) :-
+    % Imprime todas las actividades que comparten el costo máximo
+    forall(member(Actividad, ActividadesMasCaras),
+           (actividad(Actividad, Costo, Duracion, Descripcion, Tipo),
+            write('Nombre: '), write(Actividad),
+            nl, write('Costo: '), write(Costo),
+            nl, write('Duración: '), write(Duracion), write(' días'),
+            nl, write('Descripción: '), write(Descripcion),
+            nl, write('Categorias: '), mostrarTipos(Tipo), nl, nl)).
 
-encontrarMasCara([Cabeza | Resto], Actividad, CostoMax) :-
+encontrarMasCara([Cabeza | Resto], ActividadesMasCaras, CostoMax) :-
     actividad(Cabeza, Costo, _, _, _),
-
-    % Si el costo llega a ser ás alto que el acumulado se convierte en el nuevo max
-    (   Costo > CostoMax -> encontrarMasCara(Resto, Cabeza, Costo)
-    ;   encontrarMasCara(Resto, Actividad, CostoMax)
+    (   Costo > CostoMax ->
+        % Actualiza la lista solo con esta actividad si es más cara
+        encontrarMasCara(Resto, [Cabeza], Costo)
+    ;   Costo =:= CostoMax ->
+        % Agrega la actividad a la lista si el costo es igual al máximo actual y no está repetida
+        agregar_si_no_existe(Cabeza, ActividadesMasCaras, NuevaActividadesMasCaras),
+        encontrarMasCara(Resto, NuevaActividadesMasCaras, CostoMax)
+    ;   encontrarMasCara(Resto, ActividadesMasCaras, CostoMax)
     ).
 
 % Entrada: Ninguna
 % Salida: Niguna
 % Restricciones: Ninguna
-% Objetivo: Crea una lista de solo los nombres de las actividades para buscar la más cara
+% Objetivo: Hace la consulta para buscar la actividad más cara
 actividadMasCara :-
-    findall(
-        Actividad,
-        actividad(Actividad, _, _, _, _),
-        Actividades),
+    crearListaActividades(Actividades),
     encontrarMasCara(Actividades, _, 0).
+
+% Entrada: Lista de actividades, Actividad (acumulada), DuracionMin (acumulado)
+% Salida: Ninguna
+% Restricciones: Si hay actividades con una misma duracion minima entonces se mostraran tambien
+% Objetivo: Calcula la actividad con menos duracion comparando cantidad de dias
+encontrarMenorDuracion([], ActividadesMenorDuracion, _) :-
+    % Imprime todas las actividades que comparten la duración mínima
+    forall(member(Actividad, ActividadesMenorDuracion),
+           (actividad(Actividad, Costo, Duracion, Descripcion, Tipo),
+            write('Nombre: '), write(Actividad),
+            nl, write('Costo: '), write(Costo),
+            nl, write('Duración: '), write(Duracion), write(' días'),
+            nl, write('Descripción: '), write(Descripcion),
+            nl, write('Categorias: '), mostrarTipos(Tipo), nl, nl)).
+
+encontrarMenorDuracion([Cabeza | Resto], ActividadesMenorDuracion, DuracionMin) :-
+    actividad(Cabeza, _, Duracion, _, _),
+    (   Duracion < DuracionMin ->
+        % Actualiza la lista solo con esta actividad si es de menor duración
+        encontrarMenorDuracion(Resto, [Cabeza], Duracion)
+    ;   Duracion =:= DuracionMin ->
+        % Agrega la actividad a la lista si la duración es igual a la mínima actual y no está repetida
+        agregar_si_no_existe(Cabeza, ActividadesMenorDuracion, NuevaActividadesMenorDuracion),
+        encontrarMenorDuracion(Resto, NuevaActividadesMenorDuracion, DuracionMin)
+    ;   encontrarMenorDuracion(Resto, ActividadesMenorDuracion, DuracionMin)
+    ).
+
+% Entrada: Ninguna
+% Salida: Niguna
+% Restricciones: Ninguna
+% Objetivo: Hace la consulta para buscar la actividad con menos duración
+actividadMenorDuracaion :-
+    crearListaActividades(Actividades),
+    encontrarMenorDuracion(Actividades, _, 999).
 
 % Entrada: Ninguna
 % Salida: Niguna
@@ -479,6 +540,7 @@ menuEstadisticas :-
     write('c. Actividad de menor duración'), nl,
     write('d. Categoría con más actividades'), nl,
     write('e. Volver'), nl,
+    write('Ingrese la opcion que desea: '),
     read(Opcion), nl, nl,
     manejarMenuEstadisticas(Opcion).
 
@@ -488,7 +550,7 @@ menuEstadisticas :-
 % Objetivo: Manejar las opciones del menú de estadisticas
 manejarMenuEstadisticas(a) :- write('Top 3'), nl, menuEstadisticas.
 manejarMenuEstadisticas(b) :- actividadMasCara, nl, menuEstadisticas.
-manejarMenuEstadisticas(c) :- write('Menor duracion'), nl, menuEstadisticas.
+manejarMenuEstadisticas(c) :- actividadMenorDuracaion, nl, menuEstadisticas.
 manejarMenuEstadisticas(d) :- write('Cat mas actividades'), nl, menuEstadisticas.
 manejarMenuEstadisticas(e) :- !, true.
 manejarMenuEstadisticas(_) :- write('Opción inválida, vuelva a intentarlo.'), nl,nl, menuEstadisticas.
