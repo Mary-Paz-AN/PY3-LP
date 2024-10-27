@@ -455,11 +455,14 @@ crearListaActividades(Actividades) :-
         actividad(Actividad, _, _, _, _),
         Actividades).
 
-% Agrega una actividad a la lista si no está en ella
+% Entrada: Actividad, Lista (anterior)
+% Salida: NuevaLisa (resultante)
+% Restricciones: Si la actividad no existe dentro de la lista la agrega
+% Objetivo: Verificar si la actividad ya esta dentro de la lista
 agregar_si_no_existe(Actividad, Lista, NuevaLista) :-
     (   member(Actividad, Lista) ->
-        NuevaLista = Lista  % No hace nada si ya está
-    ;   NuevaLista = [Actividad | Lista]  % Agrega si no está
+        NuevaLista = Lista  
+    ;   NuevaLista = [Actividad | Lista] 
     ).
 
 % Entrada: Lista de actividades, Actividad (acumulada), CostoMax (acumulado)
