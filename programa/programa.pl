@@ -1,14 +1,53 @@
 % Crgar la base de conocimiento %
 :- consult('BC.pl').
 
-% Guarda los nuevos hechos agregados al archivo %
-guardarHechos :- 
-    tell('BC.pl'),          % Abre el archivo y redirige la salida a este archivo
-    listing(destino/2),      % Escribe todos los hechos del predicado destino/2
-    listing(actividad/5),    % Escribe todos los hechos del predicado actividad/5
-    listing(asociar_actividad/2), % Escribe todos los hechos de asociar_actividad/2
-    told.                    % Cierra el archivo y vuelve a la salida normal.
- 
+% Guarda los hechos de destino al archivo %
+guardarDestino(Nombre, Descripcion) :- 
+    % Abrir el archivo en modo de agregar sin borrar el contenido
+    open('BC.pl', append, Stream),
+    
+    % Escribir el hecho en el archivo
+    write(Stream, 'destino('),
+    write(Stream, Ciudad),
+    write(Stream, ', \''),
+    write(Stream, Descripcion),
+    write(Stream, '\').'),
+    nl(Stream), 
+    close(Stream). % Cerrar el archivo
+
+% Guarda los hechos de actividad al archivo %
+guardarActividad(Nombre, Costo, Duracion, Descripcion, Tipos) :- 
+    % Abrir el archivo en modo de agregar sin borrar el contenido
+    open('BC.pl', append, Stream),
+    
+    % Escribir el hecho en el archivo
+    write(Stream, 'actividad('),
+    write(Stream, Nombre),
+    write(Stream, ', \''),
+    write(Stream, Costo),
+    write(Stream, ', \''),
+    write(Stream, Duracion),
+    write(Stream, ', \''),
+    write(Stream, Descripcion),
+    write(Stream, ', \''),
+    write(Stream, Tipos),
+    write(Stream, '\').'),
+    nl(Stream), 
+    close(Stream). % Cerrar el archivo
+
+% Guarda los hechos de asociar_actividad al archivo %
+guardarAsociarActividad(Destino, Actividad) :- 
+    % Abrir el archivo en modo de agregar sin borrar el contenido
+    open('BC.pl', append, Stream),
+    
+    % Escribir el hecho en el archivo
+    write(Stream, 'asociar_actividad('),
+    write(Stream, Destino),
+    write(Stream, ', \''),
+    write(Stream, Actividad),
+    write(Stream, '\').'),
+    nl(Stream), 
+    close(Stream). % Cerrar el archivo
 
 % Pregunta por la información del destino %
 agregarDestino :- 
@@ -21,7 +60,7 @@ agregarDestino :-
 
     % Guarda el destino en el archivo y en la base de conocimiento %
     assertz(destino(Nombre, Descripcion)),
-    guardarHechos,
+    guardarDestino(Nombre, Descripcion),
     write('Destino registrado exitosamente.'), nl, nl.
 
 % Pregunta por la informacion de actividad %
@@ -68,7 +107,7 @@ agregarAsociarActividad :-
         % Verifica si la actividad existe
         (actividad(Actividad, _, _, _, _) ->  
             assertz(asociar_actividad(Destino, Actividad)),
-            guardarHechos,
+            guardarAsociarActividad(Destino, Actividad),
             write('Actividad asociada correctamente.'), nl, nl
         ;
             write('La actividad no existe.'), nl, nl,
