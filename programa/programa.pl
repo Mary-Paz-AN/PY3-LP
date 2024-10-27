@@ -1,8 +1,11 @@
-% Crgar la base de conocimiento %
+% Cargar la base de conocimiento 
 :- consult('BC.pl').
 
 
-% Guarda los hechos de destino al archivo %
+% Entradas: Nombre, Descripcion
+% Salida: Ninguna
+% Restricciones: Ningunas
+% Objetivo: Escribir el hecho de destino al archivo y a la base de conocimiento actual
 guardarDestino(Nombre, Descripcion) :- 
     assertz(destino(Nombre, Descripcion)),
 
@@ -19,7 +22,10 @@ guardarDestino(Nombre, Descripcion) :-
     nl(Stream), 
     close(Stream). % Cerrar el archivo
 
-% Escribir en el archivo el las categorias en la lista
+% Entradas: Stream, Lista (La lista de categorias)
+% Salida: Ninguna
+% Restricciones: Ningunas
+% Objetivo: Escribir en el archivo el las categorias en la lista
 guardarTipos(Stream, [Ultimo]) :-
     write(Stream, '\''),
     write(Stream, Ultimo),
@@ -32,7 +38,10 @@ guardarTipos(Stream, [Cabeza | Resto]) :-
     write(Stream, ', '),
     guardarTipos(Stream, Resto).
 
-% Guarda los hechos de actividad al archivo %
+% Entradas: Nombre, Costo, Duracion, Descripcion, Tipos
+% Salida: Ninguna
+% Restricciones: Ningunas
+% Objetivo: Guarda los hechos de actividad al archivo y a la base de conocimiento
 guardarActividad(Nombre, Costo, Duracion, Descripcion, Tipos) :- 
     assertz(actividad(Nombre, Costo, Duracion, Descripcion, Tipos)),
 
@@ -55,7 +64,10 @@ guardarActividad(Nombre, Costo, Duracion, Descripcion, Tipos) :-
     nl(Stream),    
     close(Stream).
 
-% Guarda los hechos de asociar_actividad al archivo %
+% Entradas: Destino, Actividad
+% Salida: Ninguna
+% Restricciones: Ningunas
+% Objetivo: Guarda los hechos de asociar_actividad al archivo y a la base de conocimiento
 guardarAsociarActividad(Destino, Actividad) :- 
     assertz(asociar_actividad(Destino, Actividad)),
 
@@ -72,15 +84,24 @@ guardarAsociarActividad(Destino, Actividad) :-
     close(Stream). % Cerrar el archivo
 
 
-% Verifica que el destino exista en la base de conocimiento
+% Entradas: Destino
+% Salidas: true o false
+% Restricciones: Ninguna
+% Objetivo: Verifica que el destino exista en la base de conocimiento
 verificarDestino(Destino) :-
     destino(Destino, _).
 
+% Entradas: Actividad
+% Salidas: true o false
+% Restricciones: Ninguna
 % Verifica que la actividad exista en la base de conocimiento
 verificarActividad(Actividad) :-
     actividad(Actividad, _, _, _, _).
 
-% Pregunta por la información del destino %
+% Entrada: Niniguna
+% Salida: Ninguna
+% Restricciones: Que el destino no exista. 
+% Objetivo: Pregunta por la información del destino 
 agregarDestino :- 
     write('Ingrese el nombre del destino: '),
     read(Nombre), nl,
@@ -96,32 +117,54 @@ agregarDestino :-
             write('Destino registrado exitosamente.'), nl, nl
     ).
 
-% Pregunta por el costo y verifica si es un entero
+% Entrada: Niniguna
+% Salida: Costo
+% Restricciones: Que el costo dado sea entero. 
+% Objetivo: Pregunta por el costo y verifica si es un entero y mayor a 0
 preguntarXCostoActividad(Costo) :-
     write('Ingrese el costo de la actividad: '),
     read(CostoInput), nl,
     
-    % Verificar si es entero
-    (   integer(CostoInput) -> Costo is CostoInput
-    ;   write('El costo debe ser un entero.'), nl,
+    % Verificar si es un entero y mayor que 0
+    (   integer(CostoInput),
+        CostoInput > 0 ->
+            Costo is CostoInput
+    ;   (   integer(CostoInput) ->
+                write('El costo debe ser mayor a 0.'), nl
+        ;   write('El costo debe ser un número entero.'), nl
+        ),
         preguntarXCostoActividad(Costo)
     ).
 
-% Pregunta por la verificar y verifica si es un entero
+% Entrada: Niniguna
+% Salida: Duracion
+% Restricciones: Que la duracion sea entera 
+% Pregunta por la verificar y verifica si es un entero y mayor a 0
 preguntarXDuracionActividad(Duracion) :-
-    write('Ingrese el duración de la actividad (dias): '),
+    write('Ingrese la duración de la actividad (días): '),
     read(DuracionInput), nl,
     
-    % Verificar si es entero
-    (   integer(DuracionInput) -> Duracion is DuracionInput
-    ;   write('La duración debe ser un entero.'), nl,
+    % Verificar si es un entero y mayor que 0
+    (   integer(DuracionInput),
+        DuracionInput > 0 ->
+            Duracion is DuracionInput
+    ;   (   integer(DuracionInput) ->
+                write('La duración debe ser mayor a 0.'), nl
+        ;   write('La duración debe ser un número entero.'), nl
+        ),
         preguntarXDuracionActividad(Duracion)
     ).
 
-% Agrega categoria a la lista
+% Entrada: Elemento (a agregar), Lista (anterior)
+% Salida: Lista (resultante)
+% Restricciones: Ninguna
+% Objetivo: Agrega una categoria a la lista
 agregarCategoria(Elemento, Lista, [Elemento | Lista]).
 
-% Pregunta por la categoria que quiere agregar
+% Entrada: ListaTipo (lista inicial)
+% Salida: ListaTipoFinal (lista final)
+% Restricciones: Que la categoria este entre las opciones
+% Objetivo: Pregunta por la categoria que quiere agregar
 preguntarXTipoActividad(ListaTipo, ListaTipoFinal) :-
     write('1. Arte'), nl,
     write('2. Cultura'), nl,
@@ -184,8 +227,11 @@ preguntarXTipoActividad(ListaTipo, ListaTipoFinal) :-
     ;   write('Opción inválida. Vuelva a intentarlo.'), nl,
         preguntarXTipoActividad(ListaTipo, ListaTipoFinal)
     ).
-    
-% Pregunta por la informacion de actividad %
+
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Que la actividad no exista.
+% Objetvo: Pregunta por la informacion de actividad 
 agregarActividad :-
     write('Ingrese el nombre de la actividad: '),
     read(Nombre), nl,
@@ -205,7 +251,10 @@ agregarActividad :-
             write('Destino registrado exitosamente.'), nl, nl
     ).
 
-% Pregunta por la actividad y verificar que exista
+% Entrada: Ninguna
+% Salida: Actividad
+% Restricciones: Que la actividad exista.
+% Objetivo: Pregunta por la actividad y verificar que exista
 preguntarActividadAA(Actividad) :-
     write('Ingrese el nombre de la actividad: '),
     read(ActividadInput), nl,
@@ -216,7 +265,10 @@ preguntarActividadAA(Actividad) :-
             preguntarActividadAA(Actividad)
     ).
 
-% Preguntapor la información para asociar la actividad 
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Que el destino y la actividad existan.
+% Objetivo: Pregunta por la información para asociar la actividad 
 agregarAsociarActividad :- 
     write('Ingrese el nombre del destino: '),
     read(Destino), nl,
@@ -230,7 +282,10 @@ agregarAsociarActividad :-
             agregarAsociarActividad
     ).
 
-% Menú para agregar hechos %
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Que se elija una opcion valida.
+% Objetivo: Menú para agregar hechos 
 menuAgregarHechos :- 
     write('a. Destino'), nl,
     write('b. Actividad'), nl,
@@ -238,17 +293,23 @@ menuAgregarHechos :-
     write('d. Volver'), nl,
     write('Ingrese la opcion que desea: '),
     read(Opcion), nl, nl,
-    manejarOpcionHechos(Opcion).
+    manejarMenuHechos(Opcion).
 
-% Maneja las opciones de agregar hechos %
-manejarOpcionHechos(a) :- agregarDestino, menuAgregarHechos.
-manejarOpcionHechos(b) :- agregarActividad, menuAgregarHechos.
-manejarOpcionHechos(c) :- agregarAsociarActividad, menuAgregarHechos.
-manejarOpcionHechos(d) :- !, true.
-manejarOpcionHechos(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, nl, menuAgregarHechos.
+% Entrada: La opcion valida
+% Salida: Ninguna
+% Restricciones: Si no es valida dar un mensaje de error y volver al menu
+% Objetivo: Maneja las opciones de agregar hechos 
+manejarMenuHechos(a) :- agregarDestino, menuAgregarHechos.
+manejarMenuHechos(b) :- agregarActividad, menuAgregarHechos.
+manejarMenuHechos(c) :- agregarAsociarActividad, menuAgregarHechos.
+manejarMenuHechos(d) :- !, true.
+manejarMenuHechos(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, nl, menuAgregarHechos.
 
 
-% Imprime las categorías de una actividad
+% Entrada: Lista (Lista de los tipos)
+% Salida: Ninguna
+% Restricciones: Si ya va por el ultimo elmento no imprimir la coma
+% Objetivo: Imprime las categorías de una actividad
 mostrarTipos([Ultimo]) :-
     write(Ultimo).
 
@@ -257,7 +318,10 @@ mostrarTipos([Cabeza | Resto]) :-
     write(', '),
     mostrarTipos(Resto).
 
-% Imprime en pantalla las actividades dadas y acumula el costo y la duración
+% Entradas: Lista (Lista de las actividades), TiempoAcumulado, CostoAcumulado
+% Salidas: TiempoTotal, CostoTotal
+% Restricciones: Si ya termino de recorrer la lista dar el costo y duracion total
+% Objetivo: Imprime en pantalla las actividades dadas y acumula el costo y la duración
 mostrarActividades([], TiempoTotal, CostoTotal, TiempoTotal, CostoTotal). 
 
 mostrarActividades([Cabeza | Resto], TiempoAcum, CostoAcum, TiempoTotal, CostoTotal) :-
@@ -276,7 +340,10 @@ mostrarActividades([Cabeza | Resto], TiempoAcum, CostoAcum, TiempoTotal, CostoTo
     mostrarActividades(Resto, NuevoTiempoAcum, NuevoCostoAcum, TiempoTotal, CostoTotal).
 
 
-% Consultar destino
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Si no hay actividades asociadas dar mensaje para informar al usuario
+% Objetivo: Consultar destino
 consultarDestino :- 
     write("Ingrese el destino que desea consultar: "), 
     read(Destino), nl,
@@ -295,8 +362,10 @@ consultarDestino :-
     ;   write('No existen actividades asociadas al destino dado.'), nl, nl
     ).
 
-
-% Actividades por tipo %
+% Entrada: 
+% Salida: 
+% Restricciones: 
+% Objetivo: Actividades por tipo 
 actividadXtipo :-
     write("Ingrese el tipo de actividad: "),
     read(Tipo),
@@ -314,11 +383,17 @@ mostrar_resultados([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
     mostrar_resultados(T).
 
 
-% Genenarar itinerario por monto %
+% Entrada: 
+% Salida: 
+% Restricciones: 
+% Objetivo: Genenarar itinerario por monto 
 itinerarioXmonto :- write("Genenarar itinerario por monto"), nl.
 
 
-% Consulta por precio
+% Entrada: 
+% Salida: 
+% Restricciones: 
+% Objetivo: Consulta por precio
 consultaXprecio :-
     write("Ingrese el monto: "),
     read(Monto),
@@ -330,7 +405,10 @@ consultaXprecio :-
     ),
     mostrar_resultados(Resultados).
 
-% Predicados para encontrar actividades por precio
+% Entrada: 
+% Salida: 
+% Restricciones: 
+% Objetivo: Predicados para encontrar actividades por precio
 actividades_mas_baratas(Monto, Resultados) :-
     findall((Destino, Nombre, Costo, Duracion, Descripcion),
             (actividad(Nombre, Costo, Duracion, Descripcion, _),
@@ -346,18 +424,80 @@ actividades_mas_caras(Monto, Resultados) :-
             Resultados).
 
 
-% Genarar itinerario por dias %
+% Entrada: 
+% Salida: 
+% Restricciones: 
+% Objetivo: Genarar itinerario por dias 
 itinerarioXdias :- write("Genarar itinerario por dias"), nl.
 
 
-% Recomendar por frase %
+% Entrada: 
+% Salida: 
+% Restricciones: 
+% Objetivo: Recomendar por frase 
 recomendarXfrase :- write("Recomendar por frase"), nl.
 
 
-% Estadisticas %
-estadisticas :- write("Estadisticas"), nl.
+% Entrada: Lista de actividades, Actividad (acumulada), CostoMax (acumulado)
+% Salida: Ninguna
+% Restricciones: Ninguna
+% Objetivo: Calcula la actividad más cara comprando costos
+encontrarMasCara([], Actividad, _) :-
+    actividad(Actividad, Costo, Duracion, Descripcion, Tipo),
+    write('Nombre: '), write(Actividad),
+    nl, write('Costo: '), write(Costo),
+    nl, write('Duración: '), write(Duracion), write(' dias'),
+    nl, write('Descripción: '), write(Descripcion),
+    nl, write('Categorias: '), mostrarTipos(Tipo), nl,nl.
+
+encontrarMasCara([Cabeza | Resto], Actividad, CostoMax) :-
+    actividad(Cabeza, Costo, _, _, _),
+
+    % Si el costo llega a ser ás alto que el acumulado se convierte en el nuevo max
+    (   Costo > CostoMax -> encontrarMasCara(Resto, Cabeza, Costo)
+    ;   encontrarMasCara(Resto, Actividad, CostoMax)
+    ).
+
+% Entrada: Ninguna
+% Salida: Niguna
+% Restricciones: Ninguna
+% Objetivo: Crea una lista de solo los nombres de las actividades para buscar la más cara
+actividadMasCara :-
+    findall(
+        Actividad,
+        actividad(Actividad, _, _, _, _),
+        Actividades),
+    encontrarMasCara(Actividades, _, 0).
+
+% Entrada: Ninguna
+% Salida: Niguna
+% Restricciones: Ninguna
+% Objetivo: Presentar el menu de estadisticas
+menuEstadisticas :- 
+    write('a. Top 3 ciudades con más actividades'), nl,
+    write('b. Actividad más cara.'), nl,
+    write('c. Actividad de menor duración'), nl,
+    write('d. Categoría con más actividades'), nl,
+    write('e. Volver'), nl,
+    read(Opcion), nl, nl,
+    manejarMenuEstadisticas(Opcion).
+
+% Entrada: Opciones validas
+% Salida: Niguna
+% Restricciones: Que la opcion sea valida, si no dar mensaje de error.
+% Objetivo: Manejar las opciones del menú de estadisticas
+manejarMenuEstadisticas(a) :- write('Top 3'), nl, menuEstadisticas.
+manejarMenuEstadisticas(b) :- actividadMasCara, nl, menuEstadisticas.
+manejarMenuEstadisticas(c) :- write('Menor duracion'), nl, menuEstadisticas.
+manejarMenuEstadisticas(d) :- write('Cat mas actividades'), nl, menuEstadisticas.
+manejarMenuEstadisticas(e) :- !, true.
+manejarMenuEstadisticas(_) :- write('Opción inválida, vuelva a intentarlo.'), nl,nl, menuEstadisticas.
 
 
+% Entrada: 
+% Salida: 
+% Restricciones: 
+% Objetivo: 
 actividades_por_tipo(Tipo, Resultados) :-
     findall((Destino, Nombre, Costo, Duracion, Descripcion),
             (actividad(Nombre, Costo, Duracion, Descripcion, Tipos),
@@ -366,7 +506,10 @@ actividades_por_tipo(Tipo, Resultados) :-
             Resultados).
 
 
-% Menú %
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Ninguna
+% Objetivo: Enseñar las opciones del menú
 menu :-
     write('a. Agregar hechos'), nl,
     write('b. Consulta de destino'), nl,
@@ -379,34 +522,46 @@ menu :-
     write('j. Volver'), nl,
     write('Ingrese la opcion que desea: '),
     read(Opcion), nl, nl,
-    manejarOpMenu(Opcion).
+    manejarMenu(Opcion).
 
-% Maneja qué se hace en cada opción con corte para evitar falsos.
-manejarOpMenu(a) :- menuAgregarHechos, menu.
-manejarOpMenu(b) :- consultarDestino, menu.
-manejarOpMenu(c) :- actividadXtipo, menu.
-manejarOpMenu(d) :- consultaXprecio, menu.
-manejarOpMenu(e) :- itinerarioXmonto, menu.
-manejarOpMenu(f) :- itinerarioXdias, menu.
-manejarOpMenu(g) :- recomendarXfrase, menu.
-manejarOpMenu(h) :- estadisticas, menu.
-manejarOpMenu(j) :- !, true.
-manejarOpMenu(_) :- write('Opción inválida, vuelva a intentarlo.'), nl,nl, menu.
+% Entrada: Opciones validas
+% Salida: Ninguna
+% Restricciones: Que la opcion dada sea valida, si no dar mensaje de error
+% Objetivo: Manejar las opciones del menú
+manejarMenu(a) :- menuAgregarHechos, menu.
+manejarMenu(b) :- consultarDestino, menu.
+manejarMenu(c) :- actividadXtipo, menu.
+manejarMenu(d) :- consultaXprecio, menu.
+manejarMenu(e) :- itinerarioXmonto, menu.
+manejarMenu(f) :- itinerarioXdias, menu.
+manejarMenu(g) :- recomendarXfrase, menu.
+manejarMenu(h) :- menuEstadisticas, menu.
+manejarMenu(j) :- !, true.
+manejarMenu(_) :- write('Opción inválida, vuelva a intentarlo.'), nl,nl, menu.
 
 
-% Menú Principal %
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Ninguna
+% Objetivo: Enseña las opciones del menú principal 
 menuPrincipal :-
     write('m. Menú'), nl,
     write('s. Salir'), nl,
     write('Ingrese la opcion que desea: '),
     read(Opcion), nl, nl,
-    manejarOpciones(Opcion).
+    manejarMenuPrincipal(Opcion).
 
-% Maneja qué se hace en cada opción con corte para evitar falsos.
-manejarOpciones(m) :- menu, menuPrincipal.
-manejarOpciones(s) :- write('Saliendo del programa...'), nl, true.
-manejarOpciones(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, nl, menuPrincipal.
+% Entrada: Opciones validas
+% Salida: Ninguna
+% Restricciones: Si la opción no es valida dar un mensaje de error
+% Objetivo: Manejar las opciones del menú principal
+manejarMenuPrincipal(m) :- menu, menuPrincipal.
+manejarMenuPrincipal(s) :- write('Saliendo del programa...'), nl, true.
+manejarMenuPrincipal(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, nl, menuPrincipal.
 
 
-% iniciar el programa %
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Ninguna
+% Objetivo: iniciar el programa 
 iniciar :- menuPrincipal.
