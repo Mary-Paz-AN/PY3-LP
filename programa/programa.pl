@@ -292,7 +292,7 @@ consultarDestino :-
             mostrarActividades(Actividades, 0, 0, TiempoTotal, CostoTotal),
             nl, write('Duración total: '), write(TiempoTotal), write(' dias'),
             nl, write('Costo total: '), write(CostoTotal), nl, nl
-    ;   write('No existen actividades asociadas al destino dado.'), nl
+    ;   write('No existen actividades asociadas al destino dado.'), nl, nl
     ).
 
 
