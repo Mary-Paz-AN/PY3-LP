@@ -1,6 +1,7 @@
 % Crgar la base de conocimiento %
 :- consult('BC.pl').
 
+
 % Guarda los hechos de destino al archivo %
 guardarDestino(Nombre, Descripcion) :- 
     assertz(destino(Nombre, Descripcion)),
@@ -70,6 +71,7 @@ guardarAsociarActividad(Destino, Actividad) :-
     nl(Stream), 
     close(Stream). % Cerrar el archivo
 
+
 % Verifica que el destino exista en la base de conocimiento
 verificarDestino(Destino) :-
     destino(Destino, _).
@@ -93,7 +95,6 @@ agregarDestino :-
             guardarDestino(Nombre, Descripcion),
             write('Destino registrado exitosamente.'), nl, nl
     ).
-
 
 % Pregunta por el costo y verifica si es un entero
 preguntarXCostoActividad(Costo) :-
@@ -183,7 +184,6 @@ preguntarXTipoActividad(ListaTipo, ListaTipoFinal) :-
     ;   write('Opción inválida. Vuelva a intentarlo.'), nl,
         preguntarXTipoActividad(ListaTipo, ListaTipoFinal)
     ).
-
     
 % Pregunta por la informacion de actividad %
 agregarActividad :-
@@ -247,8 +247,54 @@ manejarOpcionHechos(c) :- agregarAsociarActividad, menuAgregarHechos.
 manejarOpcionHechos(d) :- !, true.
 manejarOpcionHechos(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, nl, menuAgregarHechos.
 
-% Consultar destino %
-consultarDestino :- write("Consultar destino"), nl.
+
+% Imprime las categorías de una actividad
+mostrarTipos([Ultimo]) :-
+    write(Ultimo).
+
+mostrarTipos([Cabeza | Resto]) :-
+    write(Cabeza),
+    write(', '),
+    mostrarTipos(Resto).
+
+% Imprime en pantalla las actividades dadas y acumula el costo y la duración
+mostrarActividades([], TiempoTotal, CostoTotal, TiempoTotal, CostoTotal). 
+
+mostrarActividades([Cabeza | Resto], TiempoAcum, CostoAcum, TiempoTotal, CostoTotal) :-
+    actividad(Cabeza, Costo, Duracion, Descripcion, Tipos), 
+    write('Nombre: '), write(Cabeza),
+    nl, write('Costo: '), write(Costo),
+    nl, write('Duración: '), write(Duracion), write(' dias'),
+    nl, write('Descripción: '), write(Descripcion),
+    nl, write('Categorias: '), mostrarTipos(Tipos), nl, nl,
+    
+    % Actualizar los acumuladores
+    NuevoTiempoAcum is TiempoAcum + Duracion,
+    NuevoCostoAcum is CostoAcum + Costo,
+    
+    % Llamada recursiva con acumuladores actualizados
+    mostrarActividades(Resto, NuevoTiempoAcum, NuevoCostoAcum, TiempoTotal, CostoTotal).
+
+
+% Consultar destino
+consultarDestino :- 
+    write("Ingrese el destino que desea consultar: "), 
+    read(Destino), nl,
+
+    % Encuentra todas las actividades asociadas al destino
+    findall(
+        Actividad,
+        asociar_actividad(Destino, Actividad),
+        Actividades),
+    
+    % Verificar que existan actividades asociadas
+    (   Actividades \= [] ->
+            mostrarActividades(Actividades, 0, 0, TiempoTotal, CostoTotal),
+            nl, write('Duración total: '), write(TiempoTotal), write(' dias'),
+            nl, write('Costo total: '), write(CostoTotal), nl, nl
+    ;   write('No existen actividades asociadas al destino dado.'), nl
+    ).
+
 
 % Actividades por tipo %
 actividadXtipo :-
@@ -267,8 +313,10 @@ mostrar_resultados([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
     write("Descripci�n: "), write(Descripcion), nl, nl,
     mostrar_resultados(T).
 
+
 % Genenarar itinerario por monto %
 itinerarioXmonto :- write("Genenarar itinerario por monto"), nl.
+
 
 % Consulta por precio
 consultaXprecio :-
@@ -297,14 +345,18 @@ actividades_mas_caras(Monto, Resultados) :-
              asociar_actividad(Destino, Nombre)),
             Resultados).
 
- % Genarar itinerario por dias %
+
+% Genarar itinerario por dias %
 itinerarioXdias :- write("Genarar itinerario por dias"), nl.
+
 
 % Recomendar por frase %
 recomendarXfrase :- write("Recomendar por frase"), nl.
 
+
 % Estadisticas %
 estadisticas :- write("Estadisticas"), nl.
+
 
 actividades_por_tipo(Tipo, Resultados) :-
     findall((Destino, Nombre, Costo, Duracion, Descripcion),
@@ -312,6 +364,7 @@ actividades_por_tipo(Tipo, Resultados) :-
              member(Tipo, Tipos),
              asociar_actividad(Destino, Nombre)),
             Resultados).
+
 
 % Menú %
 menu :-
@@ -353,6 +406,7 @@ menuPrincipal :-
 manejarOpciones(m) :- menu, menuPrincipal.
 manejarOpciones(s) :- write('Saliendo del programa...'), nl, true.
 manejarOpciones(_) :- write('Opción inválida, vuelva a intentarlo.'), nl, nl, menuPrincipal.
+
 
 % iniciar el programa %
 iniciar :- menuPrincipal.

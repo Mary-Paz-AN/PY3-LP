@@ -19,6 +19,7 @@ destino(limon, 'Cuidad de las mejores playas').
 actividad(playa, 100, 4, 'Perfecta para relajarse', ['aventura', 'diversion']).
 actividad(concierto, 2000, 2, 'Cantar hasta no poder', ['experiencia', 'diversion']).
 asociar_actividad(tokyo, concierto).
+asociar_actividad(paris, concierto).
 asociar_actividad(limon, playa).
 actividad(karaoke, 500, 3, 'Para pasar el rato', ['experiencia', 'diversion']).
 actividad(ver_pajaros, 120, 2, 'Pasar una tarde relajante', ['educacion', 'naturaleza', 'panorama', 'cultura']).
