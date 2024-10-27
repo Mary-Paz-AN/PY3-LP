@@ -456,7 +456,7 @@ crearListaActividades(Actividades) :-
         Actividades).
 
 % Entrada: Actividad, Lista (anterior)
-% Salida: NuevaLisa (resultante)
+% Salida: NuevaLista (resultante)
 % Restricciones: Si la actividad no existe dentro de la lista la agrega
 % Objetivo: Verificar si la actividad ya esta dentro de la lista
 agregar_si_no_existe(Actividad, Lista, NuevaLista) :-
