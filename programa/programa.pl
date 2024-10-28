@@ -931,7 +931,7 @@ manejarMenu(_) :- write('Opcion invalida, vuelva a intentarlo.'), nl,nl, menu.
 % Objetivo: Enseña las opciones del menu principal 
 menuPrincipal :-
     write('----- Menu Principal -----'), nl,
-    write('m. Menu Principal'), nl,
+    write('m. Menu Admiistrativo'), nl,
     write('s. Salir'), nl,
     write('Ingrese la opcion que desea: '),
     read(Opcion), nl, nl,
