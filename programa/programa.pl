@@ -595,6 +595,92 @@ regenerar :-
 % Objetivo: Recomendar por frase 
 recomendarXfrase :- write("Recomendar por frase"), nl.
 
+
+% Entrada: Lista de destinos
+% Salida: Ninguna
+% Restricciones: Si hay el tamaño de la lista es menor a 3 solo se imprime los que hay
+% Objetivo: Imprime en pantalla el top 3
+getTopCuidades([], _, _) :- !.
+getTopCuidades([[Destino, Cantidad] | Resto], Contador, Objetivo) :- 
+    (   Contador < Objetivo ->
+            % Imprime hasta 3 destinos
+            Conta is Contador + 1,
+            destino(Destino, Descripcion),
+            write('Nombre: '), write(Destino), nl,
+            write('Descripción: '), write(Descripcion), nl,
+            write('Cantidad de actividades: '), write(Cantidad), nl, nl,
+            getTopCuidades(Resto, Conta, Objetivo)
+    ;
+        % Si ya llego a su objetivo dejar de imprimir la información
+        true
+    ).
+
+% Entrada: Lista
+% Salida: Sorted (Lista ordenada de mayor a menor)
+% Restricciones: Sort solo ordenada ascendentemente hay hacer que ordene descendentemente
+% Objetivo: Ordena la lista de mayor a menor en cantidad.
+sortedLista(Lista, Sorted) :-
+
+    % Separa el elemento de la cantidad para poder hacer el sort 
+    findall(
+        [Cantidad, Elemento], 
+        member([Elemento, Cantidad], Lista), 
+        CantidadElementoPairs),
+    sort(0, @>=, CantidadElementoPairs, SortedPairs), 
+
+    % Invertir los elmentos
+    findall(
+        [Elemento, Cantidad], 
+        member([Cantidad, Elemento], SortedPairs), 
+        Sorted).
+
+% Entrada: Destinos (Lista de destinos), DestinoAcum (Lista que acumula)
+% Salida: DestinoFinal (Lista final cn todos los destinos)
+% Restricciones: Si hay un destino con 0 actividades no se añade a la lista
+% Objetivo: Crea una lista de l destino y la cantidad de actividades
+cantActividades([], DestinoAcum, DestinoAcum).
+cantActividades([Cabeza | Resto], DestinoAcum, DestinoFinal) :-
+    findall(
+        Actividad,
+        asociar_actividad(Cabeza, Actividad),
+        Actividades),
+    length(Actividades, Tamano),
+    (   Tamano \= 0 -> 
+        % Si hay actividades, añadir a la lista
+        cantActividades(Resto, [[Cabeza, Tamano] | DestinoAcum], DestinoFinal)
+    ;   
+        % Si no hay, no añadir y continuar con el resto
+        cantActividades(Resto, DestinoAcum, DestinoFinal)
+    ).
+
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Ninguna
+% Objetivo: Hace la consulta para buscar las top 3 cuidades con más actividades
+topCuidades :- 
+    findall(
+        Destino,
+        destino(Destino, _),
+        Destinos),
+    cantActividades(Destinos, [], DestinoFinal),
+    length(DestinoFinal, Tamano),
+    (   Tamano = 0 ->
+        % Si es 0 dar el mensaje de que no hay actividades asociadas a los destinos todavía
+        write('No hay actividades asociadas a los destinos'), nl,
+        write('Asocie actividades para poder hacerlo'), nl, nl
+    ;   Tamano = 1 -> 
+        % Si el tamaño es 1 dar como objetivo 1 y no hacer el sorted
+        getTopCuidades(DestinoFinal, 0, 1)
+    ;   Tamano = 2 -> 
+        % Si es 2 dar como objetivo 2
+        sortedLista(DestinoFinal, SortedDestinos),
+        getTopCuidades(SortedDestinos, 0, 2)
+    ;   Tamano >= 3 ->
+        % Si es mayor o igual a 3 el objetivo va a ser 3
+        sortedLista(DestinoFinal, SortedDestinos),
+        getTopCuidades(SortedDestinos, 0, 3)
+    ).
+
 % Entrada: Ninguna
 % Salida: Actividades
 % Restricciones: Ninguna
@@ -707,7 +793,7 @@ menuEstadisticas :-
 % Salida: Niguna
 % Restricciones: Que la opcion sea valida, si no dar mensaje de error.
 % Objetivo: Manejar las opciones del menu de estadisticas
-manejarMenuEstadisticas(a) :- write('Top 3'), nl, menuEstadisticas.
+manejarMenuEstadisticas(a) :- topCuidades, nl, menuEstadisticas.
 manejarMenuEstadisticas(b) :- actividadMasCara, nl, menuEstadisticas.
 manejarMenuEstadisticas(c) :- actividadMenorDuracaion, nl, menuEstadisticas.
 manejarMenuEstadisticas(d) :- categoriaActividades, nl, menuEstadisticas.

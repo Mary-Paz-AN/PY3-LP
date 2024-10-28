@@ -24,3 +24,6 @@ asociar_actividad(paris, concierto).
 asociar_actividad(limon, playa).
 actividad(karaoke, 500, 3, 'Para pasar el rato', ['experiencia', 'diversion']).
 actividad(ver_pajaros, 120, 2, 'Pasar una tarde relajante', ['educacion', 'naturaleza', 'panorama', 'cultura']).
+destino(guanacaste, 'Lindo para ver vacas y extraordinarias playas').
+actividad(carreras_de_autos, 560, 4, 'Adrenalina al full', ['aventura', 'experiencia', 'diversion']).
+asociar_actividad(guanacaste, carreras_de_autos).
