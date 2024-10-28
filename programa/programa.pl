@@ -287,6 +287,7 @@ agregarAsociarActividad :-
 % Restricciones: Que se elija una opcion valida.
 % Objetivo: Menu para agregar hechos 
 menuAgregarHechos :- 
+    write('----- Agregar Hechos -----'), nl,
     write('a. Destino'), nl,
     write('b. Actividad'), nl,
     write('c. Asociar Actividad'), nl,
@@ -855,6 +856,7 @@ categoriaActividades :-
 % Restricciones: Ninguna
 % Objetivo: Presentar el menu de estadisticas
 menuEstadisticas :- 
+    write('----- Menu Estadisticas -----'), nl,
     write('a. Top 3 ciudades con mas actividades'), nl,
     write('b. Actividad mas cara.'), nl,
     write('c. Actividad de menor duracion'), nl,
@@ -893,6 +895,7 @@ actividades_por_tipo(Tipo, Resultados) :-
 % Restricciones: Ninguna
 % Objetivo: Enseñar las opciones del menu
 menu :-
+    write('----- Menu Administrativo -----'), nl,
     write('a. Agregar hechos'), nl,
     write('b. Consulta de destino'), nl,
     write('c. Actividades por tipo'), nl,
@@ -927,7 +930,8 @@ manejarMenu(_) :- write('Opcion invalida, vuelva a intentarlo.'), nl,nl, menu.
 % Restricciones: Ninguna
 % Objetivo: Enseña las opciones del menu principal 
 menuPrincipal :-
-    write('m. Menu'), nl,
+    write('----- Menu Principal -----'), nl,
+    write('m. Menu Principal'), nl,
     write('s. Salir'), nl,
     write('Ingrese la opcion que desea: '),
     read(Opcion), nl, nl,
