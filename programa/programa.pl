@@ -769,11 +769,86 @@ actividadMenorDuracaion :-
     crearListaActividades(Actividades),
     encontrarMenorDuracion(Actividades, _, 999).
 
+
+% Entrada: Lista (La lista con las categorias), Objetivo(la cantidad maxia de una categoria)
+% Salida: Niguna
+% Restricciones: Si hay vatrias categorias con la misma cantidad se imprimen 
+% Objetivo: Imprimir la categoria/categorias con más actividades
+imprimirCategoriaAct([[Categoria, Cantidad] | Cola], Objetivo) :-
+    (   Cantidad =:= Objetivo ->  
+            write('Categoria: '), write(Categoria), nl,
+            write('Cantidad de actividades: '), write(Cantidad), nl, nl,
+            imprimirCategoriaAct(Cola, Objetivo)
+    ;   !
+    ).
+
+% Entrada: Lista (lista ordenada de categorias)
+% Salida: Cantidad (la cantidad max de actividades en una categoria)
+% Restricciones: Ninguna
+% Objetivo: Sacar la cantidad más alta de actividades en una categoria
+cantMax([[_, Cantidad] | _], Cantidad).
+
+% Entrada: Elemento (categoria que se busca), CntadorAcum(contador que se va creando)
+% Salida: Contador (contador resultado)
+% Restricciones: La cabeza debe ser igual al elemento.
+% Objetivo: Contar cuantas veces la categoria sale en la lista de duplicados
+contarCategoria(_, [], ContadorAcum, ContadorAcum).
+contarCategoria(Elemento, [Cabeza | Cola], ContadorAcum, Contador) :-
+    (   Elemento = Cabeza ->  
+            Cont is ContadorAcum + 1,
+            contarCategoria(Elemento, Cola, Cont, Contador)
+    ;   contarCategoria(Elemento, Cola, ContadorAcum, Contador)
+    ).
+
+% Entrada: ListaRecorrer (lista que va a ser recorrida), 
+%   Lista (lista original), ListaAcum (lista que se va a ir creando)
+% Salida: CateCantidad (Lista final con categoria y cantidad de actividades)
+% Restricciones: Ninguna
+% Objetivo: Recorrer la lista de categorias sin duplicados para contar las categorias
+recorrerCategorias([], _, ListaAcum, ListaAcum).
+recorrerCategorias([Cabeza | Cola], Lista, ListaAcum, CateCantidad) :-
+    contarCategoria(Cabeza, Lista, 0, Cantidad),
+    recorrerCategorias(Cola, Lista, [[Cabeza, Cantidad] | ListaAcum], CateCantidad).
+    
+
+% Entrada: Lista (lista a recorrer), ListaAcum(lista qeu se va acumulando)
+% Salida: ListaResultado (lista que se va a dar como resultado)
+% Restricciones: Ninguna
+% Objetivo: Va añadiendo a la lista las categorias que etsan las sublistas
+agregarALista([], ListaAcum, ListaAcum).
+agregarALista([Cabeza | Cola], ListaAcum, ListaResultado) :-
+    agregarALista(Cola, [Cabeza | ListaAcum], ListaResultado).
+
+% Entrada: Lista de categorias en actividades, ListaAcum(Lista acumulada)
+% Salida: ListaFinal (Lista final con todas las categorias)
+% Restricciones: La lista de categorias tiene sublistas
+% Objetivo: Crea una sola lista coon todas las categorias en las actividades, aunque se repitan
+crearListaCategorias([], ListaAcum, ListaAcum).
+crearListaCategorias([Cabeza | Cola], ListaAcum, ListaFinal) :-
+    agregarALista(Cabeza, ListaAcum, ListaResultado),
+    crearListaCategorias(Cola, ListaResultado, ListaFinal).
+
 % Entrada: Ninguna
 % Salida: Niguna
 % Restricciones: Ninguna
-% Objetivo: Hace la consulta para buscar la categoria con más actividades
-categoriaActividades :- write('o').
+% Objetivo: Enseña la categoria con más actividades y la cantidad de actividades en esa categoria
+categoriaActividades :-
+    findall(
+        Categorias,
+        actividad(_, _, _, _, Categorias),
+        ListaCategorias),
+    crearListaCategorias(ListaCategorias, [], ListaFinal),
+
+    % Sort elimina duplicados
+    sort(ListaFinal, ListaSinDuplicados),
+
+    % Recorre la lista y crea una lista con las categorias y la cantidad de actividades
+    recorrerCategorias(ListaSinDuplicados, ListaFinal, [], CateCantidad),
+
+    % Saca la categoria con más actividades
+    sortedLista(CateCantidad, ListaSort),
+    cantMax(ListaSort, Cant),
+    imprimirCategoriaAct(ListaSort, Cant).
 
 % Entrada: Ninguna
 % Salida: Niguna
