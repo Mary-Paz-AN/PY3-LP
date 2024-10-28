@@ -368,34 +368,45 @@ consultarDestino :-
     ).
 
 % Entrada: Ninguna
-% Salida: Ningna
+% Salida: Ninguna
 % Restricciones: Ninguna
-% Objetivo: Preguntar por el tipo de actividad para ver actividades relacionadas al tipo
+% Objetivo: Preguntar al usuario por un tipo de actividad y mostrar actividades relacionadas a ese tipo.
 actividadXtipo :-
     write("Ingrese el tipo de actividad: "),
     read(Tipo),
     actividades_por_tipo(Tipo, Resultados),
     mostrar_resultados(Resultados).
 
-% Entrada: Lista de las actividades por el tipo
+% Entrada: Tipo (cadena)
+% Salida: Resultados (lista de actividades relacionadas al tipo)
+% Restricciones: El tipo debe coincidir con alguno existente en las actividades o en su afinidad.
+% Objetivo: Buscar actividades que coincidan con el tipo ingresado o que tengan afinidad con ese tipo.
+actividades_por_tipo(Tipo, Resultados) :-
+    findall((Destino, Nombre, Costo, Duracion, Descripcion),
+            (actividad(Nombre, Costo, Duracion, Descripcion, Tipos),
+             (member(Tipo, Tipos) ; (afinidad(Tipo, TipoAfin), member(TipoAfin, Tipos))),
+             asociar_actividad(Destino, Nombre)),
+            Resultados).
+
+% Entrada: Resultados (lista de actividades por tipo)
 % Salida: Ninguna
 % Restricciones: Ninguna
-% Objetivo: Mostrar los resultados de las actividades por el tipo dado
+% Objetivo: Mostrar la lista de actividades relacionadas al tipo de actividad ingresado.
 mostrar_resultados([]) :-
-    write("No se encontraron actividades para este tipo."), nl.
+    write("Lista de actividades generada."), nl,
+    write("Si esta vacio, no se encontraron actividades de esta categoria o afines."), nl.
 mostrar_resultados([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
     write("Destino: "), write(Destino), nl,
     write("Actividad: "), write(Nombre), nl,
     write("Costo: "), write(Costo), nl,
-    write("Duraci�n: "), write(Duracion), nl,
-    write("Descripci�n: "), write(Descripcion), nl, nl,
+    write("Duración: "), write(Duracion), nl,
+    write("Descripción: "), write(Descripcion), nl, nl,
     mostrar_resultados(T).
 
-
-% Entrada: 
-% Salida: 
-% Restricciones: 
-% Objetivo: Genenarar itinerario por monto 
+% Entrada: Ninguna
+% Salida: Genera un itinerario de actividades basado en el monto máximo, categoría de preferencia, cantidad de personas y preferencia de estancia.
+% Restricciones: El monto debe ser un número positivo; la categoría debe existir en la base de conocimiento.
+% Objetivo: Crear un itinerario de actividades según el presupuesto especificado.
 itinerarioXmonto :-
     write("Ingrese el monto maximo: "),
     read(MontoMax),
@@ -408,7 +419,10 @@ itinerarioXmonto :-
     generar_itinerario(MontoMax, Categoria, Personas, PreferenciaEstancia, Itinerario),
     mostrar_itinerario(Itinerario).
 
-% Predicado para generar el itinerario
+% Entrada: MontoMax (número), Categoria (cadena), Personas (número), PreferenciaEstancia ('l' o 'c')
+% Salida: Itinerario generado con actividades filtradas y ordenadas según duración y presupuesto.
+% Restricciones: El monto máximo y el número de personas deben ser mayores a cero; la categoría debe existir en las actividades.
+% Objetivo: Generar un itinerario que se ajuste a los criterios de presupuesto y preferencia de estancia.
 generar_itinerario(MontoMax, Categoria, Personas, PreferenciaEstancia, Itinerario) :-
     findall((Destino, Nombre, Costo, Duracion, Descripcion, Tipos),
             (actividad(Nombre, Costo, Duracion, Descripcion, Tipos),
@@ -418,21 +432,33 @@ generar_itinerario(MontoMax, Categoria, Personas, PreferenciaEstancia, Itinerari
     ordenar_por_duracion(ActividadesFiltradas, PreferenciaEstancia, ActividadesOrdenadas),
     seleccionar_actividades(ActividadesOrdenadas, MontoMax, Personas, Itinerario).
 
-% Filtrar actividades por categoria
+% Entrada: Actividades (lista), Categoria (cadena)
+% Salida: Lista de actividades que coinciden con la categoría indicada.
+% Restricciones: La categoría debe ser válida y estar presente en las actividades.
+% Objetivo: Filtrar actividades según coincidencia con la categoría indicada.
 filtrar_por_categoria(Actividades, Categoria, ActividadesFiltradas) :-
     include(tiene_categoria(Categoria), Actividades, ActividadesFiltradas).
 
+% Entrada: Categoria (cadena), Actividad (tupla con tipos de actividad)
+% Salida: Verdadero si la actividad contiene la categoría especificada.
+% Restricciones: Ninguna
+% Objetivo: Verificar si una actividad pertenece a la categoría especificada.
 tiene_categoria(Categoria, (_, _, _, _, _, Tipos)) :-
     member(Categoria, Tipos).
 
-% Extrae el cuarto elemento (duracion) y la actividad en pares (Duracion-Actividad)
+% Entrada: Actividad (tupla)
+% Salida: Pares de duración y actividad
+% Restricciones: Ninguna
+% Objetivo: Extraer la duración y combinarla con la actividad para ordenarlas.
 extraer_duracion((Ciudad, Actividad, Precio, Duracion, Descripcion, Categorias), Duracion-(Ciudad, Actividad, Precio, Duracion, Descripcion, Categorias)).
 
-% Ordenar actividades por duracion
+% Entrada: Actividades (lista), PreferenciaEstancia ('l' o 'c')
+% Salida: Lista de actividades ordenadas por duración de mayor a menor o de menor a mayor.
+% Restricciones: Ninguna
+% Objetivo: Ordenar actividades según la duración en función de la preferencia de estancia.
 ordenar_por_duracion(Actividades, l, ActividadesOrdenadas) :-
     maplist(extraer_duracion, Actividades, ActividadesConDuracion),
     sort(1, @>=, ActividadesConDuracion, ActividadesConDuracionOrdenada),
-	writeln(ActividadesConDuracionOrdenada),
     pairs_values(ActividadesConDuracionOrdenada, ActividadesOrdenadas).
 
 ordenar_por_duracion(Actividades, c, ActividadesOrdenadas) :-
@@ -440,7 +466,10 @@ ordenar_por_duracion(Actividades, c, ActividadesOrdenadas) :-
     sort(1, @=<, ActividadesConDuracion, ActividadesConDuracionOrdenada),
     pairs_values(ActividadesConDuracionOrdenada, ActividadesOrdenadas).
 
-% Seleccionar actividades que no superen el monto maximo
+% Entrada: Lista de actividades, Monto máximo, Cantidad de personas
+% Salida: Subconjunto de actividades que no superen el monto máximo permitido.
+% Restricciones: El costo total no debe superar el monto máximo.
+% Objetivo: Seleccionar actividades para el itinerario dentro del presupuesto.
 seleccionar_actividades([], _, _, []).
 seleccionar_actividades([(Destino, Nombre, Costo, Duracion, Descripcion, _)|T], MontoMax, Personas, [(Destino, Nombre, Costo, Duracion, Descripcion)|Itinerario]) :-
     CostoTotal is Costo * Personas,
@@ -450,10 +479,13 @@ seleccionar_actividades([(Destino, Nombre, Costo, Duracion, Descripcion, _)|T], 
 seleccionar_actividades([_|T], MontoMax, Personas, Itinerario) :-
     seleccionar_actividades(T, MontoMax, Personas, Itinerario).
 
-% Predicado para mostrar el itinerario
+% Entrada: Itinerario (lista)
+% Salida: Muestra el itinerario completo o indica si no hay actividades que coincidan con el filtro.
+% Restricciones: Ninguna
+% Objetivo: Mostrar el itinerario generado con las actividades seleccionadas.
 mostrar_itinerario([]) :-
-    write("Intinerario hecho."), nl,
-	write("En caso de vacio (No se encontraron actividades que coincidan con el filtro)."), nl.
+    write("Itinerario hecho."), nl,
+    write("En caso de vacio (No se encontraron actividades que coincidan con el filtro)."), nl.
 mostrar_itinerario([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
     write("Destino: "), write(Destino), nl,
     write("Actividad: "), write(Nombre), nl,
@@ -501,29 +533,36 @@ actividades_mas_caras(Monto, Resultados) :-
             Resultados).
 
 
-% Entrada: 
-% Salida: 
-% Restricciones: 
-% Objetivo: Genarar itinerario por dias 
-% Predicado principal para generar itinerario por dias con opcion de regeneracion
+% Entrada: Ninguna
+% Salida: Muestra un itinerario de actividades basado en la cantidad de días, categoría de preferencia y preferencia de estancia.
+% Restricciones: La cantidad de días debe ser un número entero; la categoría debe existir en la base de conocimiento.
+% Objetivo: Generar un itinerario de actividades basado en los parámetros del usuario con opción de regeneración.
 itinerarioXdias :-
-    write("Ingrese la cantidad maxima de dias: "),
+    write("Ingrese la cantidad máxima de días: "),
     read(MaxDias),
-    write("Ingrese la categoria de preferencia: "),
+    write("Ingrese la categoría de preferencia: "),
     read(Categoria),
     write("Prefiere estancias (l)argas o (c)ortas? "),
     read(PreferenciaEstancia),
-    assertz(datos_itinerario(MaxDias, Categoria, PreferenciaEstancia, Itinerario)),
-    generar_itinerario_por_dias(Itinerario).
+    generar_itinerario_por_dias(MaxDias, Categoria, PreferenciaEstancia),
+    preguntar_regenerar.
 
-% Predicado para generar o regenerar el itinerario
-generar_itinerario_por_dias(Itinerario) :-
-    datos_itinerario(MaxDias, Categoria, PreferenciaEstancia, _),
+% Entrada: MaxDias (entero), Categoria (cadena), PreferenciaEstancia ('l' o 'c')
+% Salida: Genera y muestra un itinerario de actividades basado en los parámetros dados.
+% Restricciones: MaxDias debe ser mayor a cero; Categoria debe existir en las actividades.
+% Objetivo: Crear o regenerar el itinerario con las actividades seleccionadas según los datos del usuario.
+generar_itinerario_por_dias(MaxDias, Categoria, PreferenciaEstancia) :-
     obtener_actividades(Categoria, PreferenciaEstancia, ActividadesOrdenadas),
     seleccionar_actividades_por_dias(ActividadesOrdenadas, MaxDias, Itinerario),
-    mostrar_itinerario(Itinerario).
+    mostrar_itinerario_dias(Itinerario),
+    % Guardamos los datos para regenerar después
+    retractall(datos_itinerario(_, _, _)),  % Limpiamos cualquier dato previo
+    assertz(datos_itinerario(MaxDias, Categoria, PreferenciaEstancia)).
 
-% Obtener actividades con filtro de categoria y orden por duracion
+% Entrada: Categoria (cadena), PreferenciaEstancia ('l' o 'c')
+% Salida: Lista de actividades ordenadas por duración o aleatoriedad.
+% Restricciones: Categoria debe existir en las actividades.
+% Objetivo: Obtener actividades filtradas por categoría o afinidad, y ordenarlas según la preferencia de estancia.
 obtener_actividades(Categoria, PreferenciaEstancia, ActividadesOrdenadas) :-
     findall((Destino, Nombre, Costo, Duracion, Descripcion, Tipos),
             (actividad(Nombre, Costo, Duracion, Descripcion, Tipos),
@@ -532,18 +571,24 @@ obtener_actividades(Categoria, PreferenciaEstancia, ActividadesOrdenadas) :-
     filtrar_por_categoria_afin(Actividades, Categoria, ActividadesFiltradas),
     ordenar_por_duracion_dias(ActividadesFiltradas, PreferenciaEstancia, ActividadesOrdenadas).
 
-% Filtrar actividades por categoria exacta o afin
+% Entrada: Actividades (lista), Categoria (cadena)
+% Salida: Lista de actividades filtradas que incluyen la categoría o afinidad especificada.
+% Restricciones: Categoria debe ser válida en afinidades o en la lista de actividades.
+% Objetivo: Filtrar actividades según coincidencia directa con la categoría o con afinidades definidas.
 filtrar_por_categoria_afin(Actividades, Categoria, ActividadesFiltradas) :-
     include(tiene_categoria_o_afin(Categoria), Actividades, ActividadesFiltradas).
 
+% Entrada: Categoria (cadena), Datos de actividad
+% Salida: Verdadero si la actividad incluye la categoría o una afinidad.
+% Restricciones: Ninguna
+% Objetivo: Determinar si una actividad coincide con la categoría indicada o su afinidad.
 tiene_categoria_o_afin(Categoria, (_, _, _, _, _, Tipos)) :-
     (member(Categoria, Tipos) ; (member(CategoriaAf, Tipos), afinidad(Categoria, CategoriaAf))).
 
-% Definir afinidad entre categorias
-afinidad(naturaleza, aventura).
-afinidad(aventura, naturaleza).
-
-% Ordenar actividades por duracion segun preferencia de estancia
+% Entrada: Actividades (lista), PreferenciaEstancia ('l' o 'c')
+% Salida: Actividades ordenadas por duración en orden ascendente o descendente.
+% Restricciones: Ninguna
+% Objetivo: Ordenar las actividades por duración en base a la preferencia de estancia.
 ordenar_por_duracion_dias(Actividades, l, ActividadesOrdenadas) :-
     maplist(extraer_duracion, Actividades, ActividadesConDuracion),
     random_permutation(ActividadesConDuracion, ActividadesRandomizadas), % Variacion para regenerar
@@ -556,7 +601,10 @@ ordenar_por_duracion_dias(Actividades, c, ActividadesOrdenadas) :-
     sort(1, @=<, ActividadesRandomizadas, ActividadesConDuracionOrdenada),
     pairs_values(ActividadesConDuracionOrdenada, ActividadesOrdenadas).
 
-% Seleccionar actividades sin superar el maximo de dias
+% Entrada: Lista de actividades, número máximo de días
+% Salida: Subconjunto de actividades que no superan el número máximo de días
+% Restricciones: La duración total no debe exceder el número máximo de días.
+% Objetivo: Seleccionar actividades para un itinerario que se ajuste al límite de días.
 seleccionar_actividades_por_dias([], _, []).
 seleccionar_actividades_por_dias([(Destino, Nombre, Costo, Duracion, Descripcion, _)|T], DiasMax, [(Destino, Nombre, Costo, Duracion, Descripcion)|Itinerario]) :-
     Duracion =< DiasMax,
@@ -565,15 +613,20 @@ seleccionar_actividades_por_dias([(Destino, Nombre, Costo, Duracion, Descripcion
 seleccionar_actividades_por_dias([_|T], DiasMax, Itinerario) :-
     seleccionar_actividades_por_dias(T, DiasMax, Itinerario).
 
-% Mostrar el itinerario y preguntar si el usuario quiere regenerarlo
+% Entrada: Itinerario (lista)
+% Salida: Muestra el itinerario completo o indica si no hay actividades que coincidan con el filtro.
+% Restricciones: Ninguna
+% Objetivo: Mostrar las actividades seleccionadas en el itinerario.
 mostrar_itinerario_dias([]) :-
     write("Itinerario completo."), nl,
     write("Si esta vacio, no se encontraron actividades que coincidan con el filtro."), nl.
 mostrar_itinerario_dias(Itinerario) :-
-    mostrar_actividades(Itinerario),
-    preguntar_regenerar(Itinerario).
+    mostrar_actividades(Itinerario).
 
-% Mostrar actividades del itinerario
+% Entrada: Lista de actividades
+% Salida: Muestra los detalles de cada actividad en la lista.
+% Restricciones: Ninguna
+% Objetivo: Desplegar la información de cada actividad en el itinerario.
 mostrar_actividades([]).
 mostrar_actividades([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
     write("Destino: "), write(Destino), nl,
@@ -583,16 +636,22 @@ mostrar_actividades([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
     write("Descripcion: "), write(Descripcion), nl, nl,
     mostrar_actividades(T).
 
-% Preguntar al usuario si desea regenerar el itinerario
+% Entrada: Ninguna
+% Salida: Llama al predicado regenerar si el usuario desea un nuevo itinerario.
+% Restricciones: Ninguna
+% Objetivo: Preguntar al usuario si desea regenerar el itinerario.
 preguntar_regenerar :-
     write("¿Desea regenerar el itinerario? (y/n): "),
     read(Opcion),
     (Opcion == y -> regenerar ; true).
 
-% Regenerar el itinerario utilizando los mismos datos
+% Entrada: Ninguna
+% Salida: Genera nuevamente el itinerario con los datos previos guardados.
+% Restricciones: Ninguna
+% Objetivo: Volver a generar el itinerario utilizando los mismos datos de entrada inicial.
 regenerar :-
-    generar_itinerario_por_dias(_).
-
+    datos_itinerario(MaxDias, Categoria, PreferenciaEstancia),
+    generar_itinerario_por_dias(MaxDias, Categoria, PreferenciaEstancia).
 
 % Entrada: 
 % Salida: 
