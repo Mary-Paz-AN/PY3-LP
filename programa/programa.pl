@@ -349,18 +349,22 @@ consultarDestino :-
     write("Ingrese el destino que desea consultar: "), 
     read(Destino), nl,
 
-    % Encuentra todas las actividades asociadas al destino
-    findall(
-        Actividad,
-        asociar_actividad(Destino, Actividad),
-        Actividades),
-    
-    % Verificar que existan actividades asociadas
-    (   Actividades \= [] ->
-            mostrarActividades(Actividades, 0, 0, TiempoTotal, CostoTotal),
-            nl, write('Duracion total: '), write(TiempoTotal), write(' dias'),
-            nl, write('Costo total: '), write(CostoTotal), nl, nl
-    ;   write('No existen actividades asociadas al destino dado.'), nl, nl
+    % Verificar que el destino exista
+    (   verificarDestino(Destino) ->
+            % Encuentra todas las actividades asociadas al destino
+            findall(
+                Actividad,
+                asociar_actividad(Destino, Actividad),
+                Actividades),
+            
+            % Verificar que existan actividades asociadas
+            (   Actividades \= [] ->
+                    mostrarActividades(Actividades, 0, 0, TiempoTotal, CostoTotal),
+                    nl, write('Duracion total: '), write(TiempoTotal), write(' dias'),
+                    nl, write('Costo total: '), write(CostoTotal), nl, nl
+            ;   write('No existen actividades asociadas al destino dado.'), nl, nl
+            )
+    ;   write('El destino ingresado no existe'), nl, nl
     ).
 
 % Entrada: Ninguna
