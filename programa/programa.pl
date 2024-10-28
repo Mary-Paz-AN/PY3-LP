@@ -940,19 +940,6 @@ manejarMenuEstadisticas(d) :- categoriaActividades, nl, menuEstadisticas.
 manejarMenuEstadisticas(e) :- !, true.
 manejarMenuEstadisticas(_) :- write('Opcion invalida, vuelva a intentarlo.'), nl,nl, menuEstadisticas.
 
-
-% Entrada: 
-% Salida: 
-% Restricciones: 
-% Objetivo: 
-actividades_por_tipo(Tipo, Resultados) :-
-    findall((Destino, Nombre, Costo, Duracion, Descripcion),
-            (actividad(Nombre, Costo, Duracion, Descripcion, Tipos),
-             member(Tipo, Tipos),
-             asociar_actividad(Destino, Nombre)),
-            Resultados).
-
-
 % Entrada: Ninguna
 % Salida: Ninguna
 % Restricciones: Ninguna
