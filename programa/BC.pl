@@ -4,6 +4,7 @@
 :- discontiguous actividad/5.
 :- dynamic asociar_actividad/2.
 :- discontiguous asociar_actividad/2.
+:- dynamic datos_itinerario/4.
 
 destino(paris, 'Ciudad de la Luz').
 destino(nueva_york, 'La Gran Manzana').
