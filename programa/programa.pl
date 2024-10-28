@@ -465,19 +465,23 @@ getTopCuidades([[Destino, Cantidad] | Resto], Contador, Objetivo) :-
         true
     ).
 
-% Entrada: Destinos
+% Entrada: Lista
 % Salida: Sorted (Lista ordenada de mayor a menor)
 % Restricciones: Sort solo ordenada ascendentemente hay hacer que ordene descendentemente
 % Objetivo: Ordena la lista de mayor a menor en cantidad.
-sortedCuidades(Destinos, Sorted) :-
+sortedLista(Lista, Sorted) :-
+
+    % Separa el elemento de la cantidad para poder hacer el sort 
     findall(
-        [Cantidad, Destino], 
-        member([Destino, Cantidad], Destinos), 
-        CantidadDestinoPairs),
-    sort(0, @>=, CantidadDestinoPairs, SortedPairs), 
+        [Cantidad, Elemento], 
+        member([Elemento, Cantidad], Lista), 
+        CantidadElementoPairs),
+    sort(0, @>=, CantidadElementoPairs, SortedPairs), 
+
+    % Invertir los elmentos
     findall(
-        [Destino, Cantidad], 
-        member([Cantidad, Destino], SortedPairs), 
+        [Elemento, Cantidad], 
+        member([Cantidad, Elemento], SortedPairs), 
         Sorted).
 
 % Entrada: Destinos (Lista de destinos), DestinoAcum (Lista que acumula)
@@ -519,11 +523,11 @@ topCuidades :-
         getTopCuidades(DestinoFinal, 0, 1)
     ;   Tamano = 2 -> 
         % Si es 2 dar como objetivo 2
-        sortedCuidades(DestinoFinal, SortedDestinos),
+        sortedLista(DestinoFinal, SortedDestinos),
         getTopCuidades(SortedDestinos, 0, 2)
     ;   Tamano >= 3 ->
         % Si es mayor o igual a 3 el objetivo va a ser 3
-        sortedCuidades(DestinoFinal, SortedDestinos),
+        sortedLista(DestinoFinal, SortedDestinos),
         getTopCuidades(SortedDestinos, 0, 3)
     ).
 
@@ -619,6 +623,12 @@ actividadMenorDuracaion :-
 % Entrada: Ninguna
 % Salida: Niguna
 % Restricciones: Ninguna
+% Objetivo: Hace la consulta para buscar la categoria con más actividades
+categoriaActividades :- write('o').
+
+% Entrada: Ninguna
+% Salida: Niguna
+% Restricciones: Ninguna
 % Objetivo: Presentar el menu de estadisticas
 menuEstadisticas :- 
     write('a. Top 3 ciudades con más actividades'), nl,
@@ -637,7 +647,7 @@ menuEstadisticas :-
 manejarMenuEstadisticas(a) :- topCuidades, nl, menuEstadisticas.
 manejarMenuEstadisticas(b) :- actividadMasCara, nl, menuEstadisticas.
 manejarMenuEstadisticas(c) :- actividadMenorDuracaion, nl, menuEstadisticas.
-manejarMenuEstadisticas(d) :- write('Cat mas actividades'), nl, menuEstadisticas.
+manejarMenuEstadisticas(d) :- categoriaActividades, nl, menuEstadisticas.
 manejarMenuEstadisticas(e) :- !, true.
 manejarMenuEstadisticas(_) :- write('Opción inválida, vuelva a intentarlo.'), nl,nl, menuEstadisticas.
 
