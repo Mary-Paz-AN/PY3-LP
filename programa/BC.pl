@@ -27,3 +27,17 @@ actividad(ver_pajaros, 120, 2, 'Pasar una tarde relajante', ['educacion', 'natur
 destino(guanacaste, 'Lindo para ver vacas y extraordinarias playas').
 actividad(carreras_de_autos, 560, 4, 'Adrenalina al full', ['aventura', 'experiencia', 'diversion']).
 asociar_actividad(guanacaste, carreras_de_autos).
+
+% Definir afinidades entre tipos de actividades
+afinidad('arte', 'cultura').
+afinidad('cultura', 'arte').
+afinidad('historia', 'arquitectura').
+afinidad('arquitectura', 'historia').
+afinidad('panorama', 'diversion').
+afinidad('diversion', 'panorama').
+afinidad('romantico', 'gastronomia').
+afinidad('gastronomia', 'romantico').
+afinidad('naturaleza', 'educativo').
+afinidad('educativo', 'naturaleza').
+afinidad('experiencia', 'aventura').
+afinidad('aventura', 'experiencia').
