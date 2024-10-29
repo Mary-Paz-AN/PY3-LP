@@ -410,12 +410,19 @@ mostrar_resultados([(Destino, Nombre, Costo, Duracion, Descripcion)|T]) :-
 itinerarioXmonto :-
     write("Ingrese el monto maximo: "),
     read(MontoMax),
+	(integer(MontoMax) -> true ; write("Error: El monto maximo debe ser un numero entero."), nl, fail),
+	
     write("Ingrese la categoria de preferencia: "),
     read(Categoria),
+	
     write("Ingrese la cantidad de personas: "),
     read(Personas),
+	(integer(Personas) -> true ; write("Error: La cantidad de personas debe ser un numero entero."), nl, fail),
+	
     write("Prefiere estancias (l)argas o (c)ortas? "),
     read(PreferenciaEstancia),
+	(atom(PreferenciaEstancia) -> true ; write("Error: La preferencia de estancia debe ser un valor tipo atomo (l o c)."), nl, fail),
+	
     generar_itinerario(MontoMax, Categoria, Personas, PreferenciaEstancia, Itinerario),
     mostrar_itinerario(Itinerario).
 
@@ -538,12 +545,17 @@ actividades_mas_caras(Monto, Resultados) :-
 % Restricciones: La cantidad de días debe ser un número entero; la categoría debe existir en la base de conocimiento.
 % Objetivo: Generar un itinerario de actividades basado en los parámetros del usuario con opción de regeneración.
 itinerarioXdias :-
-    write("Ingrese la cantidad máxima de días: "),
+    write("Ingrese la cantidad maxima de dias: "),
     read(MaxDias),
-    write("Ingrese la categoría de preferencia: "),
+    (integer(MaxDias) -> true ; write("Error: La cantidad de dias debe ser un numero entero."), nl, fail),
+    
+    write("Ingrese la categoria de preferencia: "),
     read(Categoria),
+    
     write("Prefiere estancias (l)argas o (c)ortas? "),
     read(PreferenciaEstancia),
+    (atom(PreferenciaEstancia) -> true ; write("Error: La preferencia de estancia debe ser un valor tipo atomo (l o c)."), nl, fail),
+    
     generar_itinerario_por_dias(MaxDias, Categoria, PreferenciaEstancia),
     preguntar_regenerar.
 
