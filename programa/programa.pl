@@ -667,6 +667,16 @@ regenerar :-
 
 
 % Entrada: Ninguna
+% Salida: Actividades
+% Restricciones: Ninguna
+% Objetivo: Crea una lista de solo los nombres de las actividades
+crearListaActividades(Actividades) :-
+    findall(
+        Actividad,
+        actividad(Actividad, _, _, _, _),
+        Actividades).
+
+% Entrada: Ninguna
 % Salida: Destinos
 % Restricciones: Ninguna
 % Objetivo: rear una lista de todos los destinos en la BC
@@ -714,6 +724,74 @@ separarAtomo(Atom, ListaPalabras) :-
     % Separar el por _
     split_string(String, "_", " ", ListaStrings),
     ListaPalabras = ListaStrings.
+
+% Entrada: Palabra (Palabra de la que se busca en la descripcion)
+% Salida: Nombre, Descripcion (Informacion del destino)
+% Restricciones:  Ninguna
+% Objetivo: Verifica si la palbra es parte de la descripcion de algun destino
+esDestDescp(Palabra, Nombre, Descripcion) :-
+    destino(Nombre,Descripcion),
+    sub_string(Descripcion, _, _, _, Palabra).
+
+
+% Entrada: Lista de palabras a buscar
+% Salida: Contador (Indica cuantas destinos se encontraron)
+% Restricciones: Si el contador es cero devolver false. Si un destino no tiene actividad asociada indicar al usuario
+% Objetivo: Buscar coicidencias de las palabras de la lista con la descripcion de los destinos
+buscarDestinoDescripcion([], Contador) :- 
+    (Contador = 0 -> false; true).
+
+buscarDestinoDescripcion([Cabeza | Cola], Contador) :-
+    (   esDestDescp(Cabeza, Destino, Descripcion) ->  
+            write('Se encontro un destino con su descripcion'), nl,
+            write('Nombre Destino: '), write(Destino), nl,
+            write('Descripcion: '), write(Descripcion), nl,
+            
+            % Busca las actividades asociadas al destino
+            findall(
+                Actividad,
+                asociar_actividad(Destino, Actividad),
+                Actividades),
+            
+            % Verificar que existan actividades asociadas
+            (   Actividades \= [] ->
+                    write('Actividades asociadas:'), nl,
+                    mostrarActividades(Actividades, 0, 0, _, _)
+            ;   write('No existen actividades asociadas al destino.'), nl, nl
+            ),
+            Count is Contador + 1,
+            buscarDestinoDescripcion(Cola, Count)
+    ;   % Si no se encuentra concidencias
+        buscarDestinoDescripcion(Cola, Contador)
+    ).
+
+% Entrada: Palabra (La palabra a buscar en la descripcion)
+% Salida: Nombre, Monto, Duracion, Descripcion, Tipos (Info de la actividad)
+% Restricciones: Ninguna
+% Objetivo: Verifica si la palbra es parte de la descripcion de alguna actividad
+esDesAct(Palabra, Nombre, Monto, Duracion, Descripcion, Tipos) :-
+    actividad(Nombre, Monto, Duracion, Descripcion, Tipos),
+    sub_string(Descripcion, _, _, _, Palabra).
+
+% Entrada: Lista (Lista de las palabras de la frase)
+% Salida: Contador (Indica cuantas actividades se encontraron)
+% Restricciones: Si el contador es cero devolver false. 
+% Objetivo: Buscar coicidencias de las palabras de la lista con la descripcion ed las actividades
+buscarActividadDescripcion([], Contador) :- 
+    (Contador = 0 -> false; true).
+
+buscarActividadDescripcion([Cabeza | Cola], Contador) :-
+    (   esDesAct(Cabeza, Nombre, Monto, Duracion, Descripcion, Tipos) ->  
+            write('Nombre: '), write(Nombre), nl,
+            write('Monto: '), write(Monto), nl,
+            write('Duracion: '), write(Duracion), nl,
+            write('Descripcion: '), write(Descripcion), nl,
+            write('Categorias: '), mostrarTipos(Tipos), nl, nl,
+            Count is Contador + 1,
+            buscarActividadDescripcion(Cola, Count)
+    ;   % Si no se encuentra concidencias
+        buscarActividadDescripcion(Cola, Contador)
+    ).
 
 % Entrada: Lista de palabras a buscar, ListaAct (lista de destinos en la BC)
 % Salida: Contador (Indica cuantas destinos se encontraron)
@@ -893,16 +971,6 @@ topCuidades :-
         sortedLista(DestinoFinal, SortedDestinos),
         getTopCuidades(SortedDestinos, 0, 3)
     ).
-
-% Entrada: Ninguna
-% Salida: Actividades
-% Restricciones: Ninguna
-% Objetivo: Crea una lista de solo los nombres de las actividades
-crearListaActividades(Actividades) :-
-    findall(
-        Actividad,
-        actividad(Actividad, _, _, _, _),
-        Actividades).
 
 % Entrada: Actividad, Lista (anterior)
 % Salida: NuevaLista (resultante)
@@ -1118,7 +1186,7 @@ manejarMenu(c) :- actividadXtipo, menu.
 manejarMenu(d) :- consultaXprecio, menu.
 manejarMenu(e) :- itinerarioXmonto, menu.
 manejarMenu(f) :- itinerarioXdias, menu.
-manejarMenu(g) :- recomendarXfrase, menu.
+manejarMenu(g) :- recomendarXFrase, menu.
 manejarMenu(h) :- menuEstadisticas, menu.
 manejarMenu(j) :- !, true.
 manejarMenu(_) :- write('Opcion invalida, vuelva a intentarlo.'), nl,nl, menu.
