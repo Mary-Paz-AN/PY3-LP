@@ -734,7 +734,7 @@ esCategoria(Palabra, Actividades) :-
     atom_string(AtmPalabra, Palabra),
     findall(Nombre,
             (actividad(Nombre, _, _, _, Categorias),
-             member(AtmPalabra, Categorias)),
+             tiene_categoria_o_afin(AtmPalabra, (_, _, _, _, Categorias))),
             Actividades).
 
 % Entrada: Lista (La lista de las palabras de la frase)
