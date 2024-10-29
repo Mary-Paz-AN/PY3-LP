@@ -665,11 +665,148 @@ regenerar :-
     datos_itinerario(MaxDias, Categoria, PreferenciaEstancia),
     generar_itinerario_por_dias(MaxDias, Categoria, PreferenciaEstancia).
 
-% Entrada: 
-% Salida: 
-% Restricciones: 
-% Objetivo: Recomendar por frase 
-recomendarXfrase :- write("Recomendar por frase"), nl.
+
+% Entrada: Ninguna
+% Salida: Destinos
+% Restricciones: Ninguna
+% Objetivo: rear una lista de todos los destinos en la BC
+crearListaDestinos(Destinos) :-
+    findall(
+        Destino,
+        destino(Destino, _),
+        Destinos).
+
+% Entrada: Lista (lista de palabras), ListaAcum (lista que se acumula)
+% Salida: ListaResultante (Lista con los datos objetivos)
+% Restricciones: Si la palabra tiene menos de 4 letras no se incluye e la lista
+% Objetivo: Eliminar palabras innecesarias en la lista de palabras
+eliminarArticulos([], ListaAcum, ListaResultante) :-
+    % Se invierte para respetar el orden original de la frase
+    reverse(ListaAcum, ListaResultante).
+
+eliminarArticulos([Cabeza | Resto], ListaAcum, ListaResultante) :-
+    string_length(Cabeza, Tamano),
+    % Si el largo es menor a 4 entonces o se agrega a la lista
+    (   Tamano < 4 ->  
+    		eliminarArticulos(Resto, ListaAcum, ListaResultante)
+    ;   % Si es mayor o igual a 4 se agrega a la lista resultante
+    	eliminarArticulos(Resto, [Cabeza | ListaAcum], ListaResultante)
+    ).
+
+% Entrada: ListaAtomos (lista de atomos de los hechos)
+% Salida: ListaPalabras (lista del atomo convertido en string)
+% Restricciones: Ninguna
+% Objetivo: Crear una lista de los atomos como string
+separarAtomoLista(ListaAtomos, ListaPalabras) :-
+    % Usar maplist para aplicar el predicado de separación a cada átomo de la lista
+    maplist(separarAtomo, ListaAtomos, ListasPalabrasTemporales),
+    % Convertir 
+    flatten(ListasPalabrasTemporales, ListaPalabras).
+
+% Entrada: Atom
+% Salida: ListaPalabras (lista del atomo convertido en string)
+% Restricciones: Ninguna
+% Objetivo: Separar aquellos atomos con la barra inferior.
+separarAtomo(Atom, ListaPalabras) :-
+    % Convertir el átomo a string
+    atom_string(Atom, String),
+    
+    % Separar el por _
+    split_string(String, "_", " ", ListaStrings),
+    ListaPalabras = ListaStrings.
+
+% Entrada: Lista de palabras a buscar, ListaAct (lista de destinos en la BC)
+% Salida: Contador (Indica cuantas destinos se encontraron)
+% Restricciones: Si el contador es cero devolver false. Si un destino no tiene actividad asociada indicar al usuario
+% Objetivo: Buscar coicidencias de las palabras de la lista con el nombre de los destinos
+compararDestinos([], _, Contador) :- 
+    (Contador = 0 -> false; true).
+
+compararDestinos([Cabeza | Resto], ListAct, Contador) :-
+    % Verificar si hay una actividad que contiene la palabra
+    (   member(Cabeza, ListAct) ->
+            Count is Contador + 1,
+            atom_string(AtomPalabra, Cabeza),
+            destino(Destino, Descripcion),
+            sub_atom(Destino, _, _, _, AtomPalabra),
+            write('Se encontro un destino con su descripcion'), nl,
+            write('Nombre Destino: '), write(Destino), nl,
+            write('Descripcion: '), write(Descripcion), nl,
+            
+            % Busca las actividades asociadas al destino
+            findall(
+                Actividad,
+                asociar_actividad(Destino, Actividad),
+                Actividades),
+            
+            % Verificar que existan actividades asociadas
+            (   Actividades \= [] ->
+                    write('Actividades asociadas:'), nl,
+                    mostrarActividades(Actividades, 0, 0, _, _)
+            ;   write('No existen actividades asociadas al destino.'), nl, nl
+            ),
+            compararDestinos(Resto, ListAct, Count)
+    ;   % Si no se encuentra
+        compararDestinos(Resto, ListAct, Contador)
+    ).
+
+% Entrada: ListaFrase
+% Salida: Ninguna
+% Restricciones: Ninguna
+% Objetivo: Buscar una actividad por medio del nombre de un destino
+buscarDestinoNombre(ListaFrase) :-
+    crearListaDestinos(Destinos),
+    separarAtomoLista(Destinos, ListaDestinosStr),
+    eliminarArticulos(ListaDestinosStr, [], ListDest),
+    compararDestinos(ListaFrase, ListDest, 0). 
+
+% Entrada: Lista de palabras a buscar, ListaAct (lista de actiidades enla BC)
+% Salida: Contador (Indica cuantas actividades se encontraron)
+% Restricciones: Si el contaor es cero deolver false
+% Objetivo: Buscar coicidencias de las palabras de la lista con el nombre de las actividades
+compararActividades([], _, Contador) :- 
+    (Contador = 0 -> false; true).
+
+compararActividades([Cabeza | Resto], ListAct, Contador) :-
+    % Verificar si hay una actividad que contiene la palabra
+    (   member(Cabeza, ListAct) ->
+        	Count is Contador + 1,
+        	atom_string(AtomPalabra, Cabeza),
+        	actividad(Nombre, Monto, Duracion, Descripcion, Tipos),
+        	sub_atom(Nombre, _, _, _, AtomPalabra),
+        	write('Nombre: '), write(Nombre), nl,
+        	write('Monto: '), write(Monto), nl,
+            write('Duracion: '), write(Duracion), nl,
+            write('Descripcion: '), write(Descripcion), nl,
+            write('Categorias: '), mostrarTipos(Tipos), nl, nl,
+        	compararActividades(Resto, ListAct, Count)
+    ;   % Si no se encuentra
+    	compararActividades(Resto, ListAct, Contador)
+    ).
+
+% Entrada: ListaFrase
+% Salida: Ninguna
+% Restricciones: Ninguna
+% Objetivo: Buscar una actividad por medio del nombre de la actividad
+buscarActividadNombre(ListaFrase) :-
+    crearListaActividades(Actividades),
+    separarAtomoLista(Actividades, ListaActividadesStr),
+    eliminarArticulos(ListaActividadesStr, [], ListAct),
+    compararActividades(ListaFrase, ListAct, 0). 
+
+% Entrada: Ninguna
+% Salida: Ninguna
+% Restricciones: Si no se encuentran actividades informar al usuario
+% Objetivo: Recomendar actividades por medio de frases del usuarios
+recomendarXFrase :-
+    write('Escriba una breve descripcion de lo que quisiera:'), nl,
+    read(Frase), nl,
+    atom_string(Frase, FraseStr),
+    split_string(FraseStr, " ", ";.", ListaPalabras),
+    eliminarArticulos(ListaPalabras, [], ListaFrase),
+    (   buscarActividadNombre(ListaFrase)
+    ;   buscarDestinoNombre(ListaFrase)
+    ) -> true ; write('No se encontraron actividades.'), nl, nl.
 
 
 % Entrada: Lista de destinos
@@ -890,7 +1027,7 @@ recorrerCategorias([Cabeza | Cola], Lista, ListaAcum, CateCantidad) :-
 % Entrada: Lista (lista a recorrer), ListaAcum(lista qeu se va acumulando)
 % Salida: ListaResultado (lista que se va a dar como resultado)
 % Restricciones: Ninguna
-% Objetivo: Va añadiendo a la lista las categorias que etsan las sublistas
+% Objetivo: Va añadiendo a la lista las categorias que estan las sublistas
 agregarALista([], ListaAcum, ListaAcum).
 agregarALista([Cabeza | Cola], ListaAcum, ListaResultado) :-
     agregarALista(Cola, [Cabeza | ListaAcum], ListaResultado).
