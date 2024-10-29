@@ -725,6 +725,35 @@ separarAtomo(Atom, ListaPalabras) :-
     split_string(String, "_", " ", ListaStrings),
     ListaPalabras = ListaStrings.
 
+
+% Entrada: Palabra
+% Salida: Actividades (Lista de los nombres de las actividades)
+% Restricciones: Ninguna
+% Objetivo: Buscar las actividades con la categoria especificada.
+esCategoria(Palabra, Actividades) :-
+    atom_string(AtmPalabra, Palabra),
+    findall(Nombre,
+            (actividad(Nombre, _, _, _, Categorias),
+             member(AtmPalabra, Categorias)),
+            Actividades).
+
+% Entrada: Lista (La lista de las palabras de la frase)
+% Salida: Contador(Contador para las actividades encontradas)
+% Restricciones: Ninguna
+% Objetivo: Buscar las actividades con la categoria especificada.
+buscarActividadTipos([], Contador) :- 
+    (Contador = 0 -> false; true).
+
+buscarActividadTipos([Cabeza | Cola], Contador) :-
+    (   esCategoria(Cabeza, Actividades),
+        Actividades \= [] ->  
+        mostrarActividades(Actividades, 0, 0, _, _),
+        Count is Contador + 1,
+        buscarActividadTipos(Cola, Count)
+    ;   % Si no coincide
+        buscarActividadTipos(Cola, Contador)
+    ).
+
 % Entrada: Palabra (Palabra de la que se busca en la descripcion)
 % Salida: Nombre, Descripcion (Informacion del destino)
 % Restricciones:  Ninguna
@@ -884,6 +913,9 @@ recomendarXFrase :-
     eliminarArticulos(ListaPalabras, [], ListaFrase),
     (   buscarActividadNombre(ListaFrase)
     ;   buscarDestinoNombre(ListaFrase)
+    ;   buscarActividadDescripcion(ListaFrase, 0)
+    ;   buscarDestinoDescripcion(ListaFrase, 0)
+    ;   buscarActividadTipos(ListaFrase, 0)
     ) -> true ; write('No se encontraron actividades.'), nl, nl.
 
 
@@ -1051,7 +1083,7 @@ actividadMenorDuracaion :-
     encontrarMenorDuracion(Actividades, _, 999).
 
 
-% Entrada: Lista (La lista con las categorias), Objetivo(la cantidad maxia de una categoria)
+% Entrada: Lista (La lista con las categorias), Objetivo(la cantidad maxima de una categoria)
 % Salida: Niguna
 % Restricciones: Si hay vatrias categorias con la misma cantidad se imprimen 
 % Objetivo: Imprimir la categoria/categorias con más actividades
@@ -1103,7 +1135,7 @@ agregarALista([Cabeza | Cola], ListaAcum, ListaResultado) :-
 % Entrada: Lista de categorias en actividades, ListaAcum(Lista acumulada)
 % Salida: ListaFinal (Lista final con todas las categorias)
 % Restricciones: La lista de categorias tiene sublistas
-% Objetivo: Crea una sola lista coon todas las categorias en las actividades, aunque se repitan
+% Objetivo: Crea una sola lista con todas las categorias en las actividades, aunque se repitan
 crearListaCategorias([], ListaAcum, ListaAcum).
 crearListaCategorias([Cabeza | Cola], ListaAcum, ListaFinal) :-
     agregarALista(Cabeza, ListaAcum, ListaResultado),
